@@ -1,0 +1,122 @@
+---
+title: Database schema
+description: Database tables and relationships for SymbolicSurveys
+---
+
+## Entity relationship diagram
+
+```
+┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│   surveys   │       │  questions  │       │   answers   │
+├─────────────┤       ├─────────────┤       ├─────────────┤
+│ id          │◄──┐   │ id          │◄──┐   │ id          │
+│ uuid        │   │   │ survey_id   │───┘   │ survey_id   │───┐
+│ title       │   │   │ text        │   ┌───│ question_id │   │
+│ description │   │   │ type        │   │   │ response    │   │
+│ is_active   │   │   │ options     │◄──┘   │ created_at  │   │
+│ created_at  │   │   │ required    │       │ updated_at  │   │
+│ updated_at  │   │   │ position    │       └─────────────┘   │
+└─────────────┘   │   │ created_at  │                         │
+                  │   │ updated_at  │                         │
+                  │   └─────────────┘                         │
+                  └───────────────────────────────────────────┘
+```
+
+## Tables
+
+### surveys
+
+Stores survey metadata and configuration.
+
+```sql
+CREATE TABLE surveys (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    uuid CHAR(36) UNIQUE NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL
+);
+```
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | bigint | Primary key |
+| `uuid` | char(36) | Unique identifier for public URLs |
+| `title` | varchar(255) | Survey title |
+| `description` | text | Optional description |
+| `is_active` | boolean | Whether survey accepts responses |
+| `created_at` | timestamp | Creation timestamp |
+| `updated_at` | timestamp | Last update timestamp |
+
+### questions
+
+Stores questions belonging to surveys.
+
+```sql
+CREATE TABLE questions (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    survey_id BIGINT UNSIGNED NOT NULL,
+    text TEXT NOT NULL,
+    type VARCHAR(255) NOT NULL,
+    options JSON NULL,
+    required BOOLEAN DEFAULT TRUE,
+    position INT UNSIGNED DEFAULT 0,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    FOREIGN KEY (survey_id) REFERENCES surveys(id) ON DELETE CASCADE
+);
+```
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | bigint | Primary key |
+| `survey_id` | bigint | Foreign key to surveys |
+| `text` | text | Question text |
+| `type` | varchar | `scale`, `multiple_choice`, or `text` |
+| `options` | json | Answer options for multiple choice |
+| `required` | boolean | Whether question must be answered |
+| `position` | int | Display order |
+| `created_at` | timestamp | Creation timestamp |
+| `updated_at` | timestamp | Last update timestamp |
+
+### answers
+
+Stores individual responses to questions.
+
+```sql
+CREATE TABLE answers (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    survey_id BIGINT UNSIGNED NOT NULL,
+    question_id BIGINT UNSIGNED NOT NULL,
+    response_value TEXT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    FOREIGN KEY (survey_id) REFERENCES surveys(id) ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
+);
+```
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | bigint | Primary key |
+| `survey_id` | bigint | Foreign key to surveys |
+| `question_id` | bigint | Foreign key to questions |
+| `response_value` | text | The submitted answer |
+| `created_at` | timestamp | Submission timestamp |
+| `updated_at` | timestamp | Last update timestamp |
+
+## Relationships
+
+- A **Survey** has many **Questions**
+- A **Survey** has many **Answers**
+- A **Question** belongs to one **Survey**
+- A **Question** has many **Answers**
+- An **Answer** belongs to one **Survey** and one **Question**
+
+## Cascade deletes
+
+All foreign keys use `ON DELETE CASCADE`:
+- Deleting a survey removes all its questions and answers
+- Deleting a question removes all its answers
