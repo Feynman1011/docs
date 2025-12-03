@@ -48,6 +48,32 @@
         ]
       },
       {
+        "tab": "SymbolicSurveys",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "symbolicsurveys/overview",
+              "symbolicsurveys/installation"
+            ]
+          },
+          {
+            "group": "Usage",
+            "pages": [
+              "symbolicsurveys/surveys",
+              "symbolicsurveys/questions",
+              "symbolicsurveys/results"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "symbolicsurveys/database"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "API reference",
         "groups": [
           {
