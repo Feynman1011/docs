@@ -1,0 +1,57 @@
+---
+title: Overview
+description: A Laravel-based web application for creating, managing, and analyzing surveys
+---
+
+SymbolicSurveys is a full-featured survey management platform built with Laravel 10. It provides an admin dashboard for creating surveys, managing questions, and analyzing responses with export capabilities.
+
+## Features
+
+- **Survey management** - Create, edit, and activate/deactivate surveys
+- **Multiple question types** - Support for scale (1-5), multiple choice, and free text questions
+- **Public survey links** - Share surveys via unique UUID-based URLs
+- **Results analytics** - View response data with aggregated statistics
+- **Export options** - Download results as CSV or PDF
+
+## Architecture
+
+SymbolicSurveys follows the standard Laravel MVC architecture:
+
+```
+app/
+├── Http/Controllers/
+│   ├── Admin/           # Admin dashboard controllers
+│   │   ├── DashboardController.php
+│   │   ├── SurveyController.php
+│   │   ├── QuestionController.php
+│   │   └── ResultController.php
+│   ├── Auth/            # Authentication controllers
+│   └── PublicSurveyController.php
+├── Models/
+│   ├── Survey.php
+│   ├── Question.php
+│   ├── Answer.php
+│   └── User.php
+```
+
+## Tech stack
+
+| Component | Technology |
+|-----------|------------|
+| Framework | Laravel 10 |
+| PHP | 8.1+ |
+| Database | MySQL |
+| PDF Export | barryvdh/laravel-dompdf |
+| Authentication | Laravel Sanctum |
+| Frontend | Blade templates |
+
+## Routes overview
+
+| Route | Description |
+|-------|-------------|
+| `/admin` | Admin dashboard |
+| `/admin/surveys` | Survey management |
+| `/admin/surveys/{id}/questions` | Question management |
+| `/admin/surveys/{id}/results` | View results |
+| `/survey/{uuid}` | Public survey form |
+| `/s/{uuid}` | Short public survey URL |

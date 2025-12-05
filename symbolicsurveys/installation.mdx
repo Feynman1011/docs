@@ -1,0 +1,87 @@
+---
+title: Installation
+description: Set up SymbolicSurveys on your local machine or server
+---
+
+## Prerequisites
+
+- PHP 8.1 or higher
+- Composer
+- MySQL 5.7+ or MariaDB 10.3+
+- Node.js and npm (for frontend assets)
+
+## Installation steps
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Feynman1011/symbolicsurveys.git
+cd symbolicsurveys
+```
+
+### 2. Install dependencies
+
+```bash
+composer install
+npm install
+```
+
+### 3. Configure environment
+
+Copy the example environment file and generate an application key:
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+### 4. Configure database
+
+Edit `.env` with your database credentials:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=symbolicsurveys
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
+
+### 5. Run migrations
+
+```bash
+php artisan migrate
+```
+
+### 6. Build frontend assets
+
+```bash
+npm run build
+```
+
+### 7. Start the development server
+
+```bash
+php artisan serve
+```
+
+The application will be available at `http://localhost:8000`.
+
+## Docker setup
+
+SymbolicSurveys includes a `compose.yaml` for Docker-based development:
+
+```bash
+docker compose up -d
+```
+
+## Production deployment
+
+For production environments:
+
+1. Set `APP_ENV=production` and `APP_DEBUG=false` in `.env`
+2. Configure a proper session driver (database or redis)
+3. Set up a web server (Nginx or Apache) with PHP-FPM
+4. Run `php artisan config:cache` and `php artisan route:cache`
+5. Configure SSL/TLS for secure connections

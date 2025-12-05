@@ -1,0 +1,132 @@
+---
+title: Results and exports
+description: View survey analytics and export response data
+---
+
+## Viewing results
+
+Navigate to `/admin/surveys/{id}/results` to view response analytics for a survey.
+
+### Results by question type
+
+**Scale questions** display:
+- Bar chart with distribution across values 1-5
+- Average score (weighted mean)
+- Total response count
+
+**Multiple choice questions** display:
+- Bar chart showing count per option
+- Total response count
+
+**Text questions** display:
+- List of all submitted responses
+- Total response count
+
+## Export formats
+
+### CSV export
+
+Download results as a CSV file at `/admin/surveys/{id}/export/csv`.
+
+CSV format:
+```csv
+Question,Answer,Submitted At
+"How satisfied are you?","4","2025-01-15 10:30"
+"What could we improve?","Better documentation","2025-01-15 10:31"
+```
+
+```php
+public function exportCsv(Survey $survey): StreamedResponse
+{
+    $headers = [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => 'attachment; filename="survey-'.$survey->id.'-results.csv"',
+    ];
+
+    $callback = function () use ($survey): void {
+        $handle = fopen('php://output', 'w');
+        fputcsv($handle, ['Question', 'Answer', 'Submitted At']);
+
+        foreach ($survey->questions as $question) {
+            foreach ($question->answers as $answer) {
+                fputcsv($handle, [
+                    $question->text,
+                    $answer->response_value,
+                    optional($answer->created_at)->format('Y-m-d H:i'),
+                ]);
+            }
+        }
+
+        fclose($handle);
+    };
+
+    return response()->stream($callback, 200, $headers);
+}
+```
+
+### PDF export
+
+Download a formatted PDF report at `/admin/surveys/{id}/export/pdf`.
+
+The PDF export uses the `barryvdh/laravel-dompdf` package:
+
+```php
+public function exportPdf(Survey $survey): SymfonyResponse
+{
+    $survey->load('questions.answers');
+    $results = $this->compileResults($survey);
+
+    $pdf = Pdf::loadView('admin.results.pdf', compact('survey', 'results'));
+
+    return $pdf->download('survey-'.$survey->id.'-results.pdf');
+}
+```
+
+## Results data structure
+
+The `compileResults` method returns an array with the following structure for each question:
+
+```php
+[
+    'question' => 'Question text',
+    'type' => 'scale|multiple_choice|text',
+    'labels' => [],      // Chart labels
+    'data' => [],        // Chart data values
+    'average' => null,   // Average for scale questions
+    'responses' => [],   // Text responses
+    'total' => 0,        // Total response count
+]
+```
+
+### Scale question results
+
+```php
+[
+    'labels' => [1, 2, 3, 4, 5],
+    'data' => [2, 5, 10, 15, 8],  // Count per value
+    'average' => 3.55,
+    'total' => 40,
+]
+```
+
+### Multiple choice results
+
+```php
+[
+    'labels' => ['Option A', 'Option B', 'Option C'],
+    'data' => [12, 8, 20],  // Count per option
+    'total' => 40,
+]
+```
+
+### Text question results
+
+```php
+[
+    'responses' => [
+        'First response text',
+        'Second response text',
+    ],
+    'total' => 2,
+]
+```

@@ -1,0 +1,101 @@
+---
+title: Question types
+description: Configure different question types for your surveys
+---
+
+SymbolicSurveys supports three question types: scale, multiple choice, and free text.
+
+## Question types
+
+### Scale (1-5)
+
+Rating questions where respondents select a value from 1 to 5.
+
+```php
+// Validation for scale questions
+Rule::in(['1', '2', '3', '4', '5'])
+```
+
+Results display:
+- Bar chart showing distribution across values
+- Calculated average score
+
+### Multiple choice
+
+Questions with predefined answer options. Options are stored as a JSON array.
+
+```php
+// Options are parsed from newline-separated input
+$options = collect(preg_split("/\r\n|\r|\n/", $raw))
+    ->map(fn ($option) => trim($option))
+    ->filter()
+    ->values()
+    ->all();
+```
+
+Results display:
+- Bar chart showing response counts per option
+
+### Free text
+
+Open-ended questions accepting any text response.
+
+Results display:
+- List of all submitted responses
+
+## Creating questions
+
+1. Navigate to `/admin/surveys/{id}/questions`
+2. Click **Add Question**
+3. Configure the question:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `text` | string | The question text (max 1000 characters) |
+| `type` | enum | `scale`, `multiple_choice`, or `text` |
+| `options` | text | Newline-separated options (multiple choice only) |
+| `required` | boolean | Whether the question must be answered |
+| `position` | integer | Display order (lower numbers appear first) |
+
+## Question properties
+
+```php
+protected $fillable = [
+    'survey_id',
+    'text',
+    'type',
+    'options',
+    'required',
+    'position',
+];
+
+protected $casts = [
+    'options' => 'array',
+    'required' => 'boolean',
+];
+```
+
+## Validation rules
+
+```php
+$validator = Validator::make($request->all(), [
+    'text' => ['required', 'string', 'max:1000'],
+    'type' => ['required', 'in:scale,multiple_choice,text'],
+    'options' => ['nullable', 'string'],
+    'required' => ['nullable', 'boolean'],
+    'position' => ['nullable', 'integer', 'min:0'],
+]);
+```
+
+Multiple choice questions require at least one option to be provided.
+
+## Question ordering
+
+Questions are displayed in order of their `position` field. When creating questions, set the position to control the display order:
+
+```php
+public function questions(): HasMany
+{
+    return $this->hasMany(Question::class)->orderBy('position');
+}
+```
