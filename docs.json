@@ -70,6 +70,15 @@
             "pages": [
               "symbolicsurveys/database"
             ]
+          },
+          {
+            "group": "Diagrams",
+            "pages": [
+              "symbolicsurveys/diagrams/use-case",
+              "symbolicsurveys/diagrams/er-diagram",
+              "symbolicsurveys/diagrams/architecture",
+              "symbolicsurveys/diagrams/sequence"
+            ]
           }
         ]
       },
